@@ -460,10 +460,14 @@
 
         Promise.all([
             d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"),
-            d3.csv("filter.csv")
-        ]).then(([worldData, csvData]) => {
+            d3.csv("split_part_1.csv"),
+            d3.csv("split_part_2.csv"),
+            d3.csv("split_part_3.csv"),
+            d3.csv("split_part_4.csv")
+        ]).then(([worldData, ...csvData]) => {
             world = worldData;
-            processData(csvData);
+            let mergedCsvData = [].concat(...csvData);
+            processData(mergedCsvData);
             updateDropdown();
             updateMap(ranges.km[0]);
 
