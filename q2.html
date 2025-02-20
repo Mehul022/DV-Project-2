@@ -184,9 +184,40 @@
                 flex-direction: column;
             }
         }
+
+        .back-button-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
+    <div class="back-button-container">
+        <a href="index.html" class="back-button">Back to Home</a>
+    </div>
     <h2>Choropleth Map: Long-Distance Running Performance</h2>
     <button id="kmBtn" class="active">KM</button>
     <button id="miBtn">MI</button>

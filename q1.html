@@ -115,14 +115,52 @@
         .bar-group:hover .bar:hover {
             opacity: 1;
         }
-        #chart
-        {
+        
+        #chart {
             margin-left: 3vw;
+        }
+        .back-button-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        /* New styles for the back button */
+        .back-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .content-wrapper {
+            background: rgba(244, 181, 229, 0.6);
+            backdrop-filter: blur(8px);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin: 2rem;
+            width: 90%;
+            max-width: 1000px;
         }
     </style>
 </head>
 
 <body>
+    <div class="back-button-container">
+        <a href="index.html" class="back-button">Back to Home</a>
+    </div>
     <div class="content-wrapper">
         <div class="controls">
             <label>Show Data For: </label>

@@ -7,30 +7,63 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-image: url('bg5.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             margin: 0;
             padding: 10px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
+            color: #333;
         }
 
         .container {
             display: flex;
             justify-content: space-between;
-            background-color: rgba(255, 255, 255, 0.9);
+            align-items: flex-start;
+            background-color: rgba(255, 255, 255, 0.75);
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
             border-radius: 15px;
             padding: 20px;
-            backdrop-filter: blur(15px);
+            backdrop-filter: blur(10px);
             width: 95%;
-            max-width: 1200px;
-            position: relative;
+            max-width: 1600px;
+            margin-top: 20px;
+        }
+
+        h2 {
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .chart-container {
+            flex: 2;
+            margin-right: 20px;
+        }
+
+        .pie-chart-container {
+            flex: 1;
+            min-width: 350px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .pie-chart {
+            width: 100%;
+            min-height: 400px;
+            max-height: 500px;
         }
 
         svg {
-            background-color: transparent;
+            background-color: rgba(255, 255, 255, 0.5);
             border-radius: 15px;
             transition: all 0.3s ease;
         }
@@ -63,17 +96,6 @@
             r: 8;
         }
 
-        .axis path,
-        .axis line {
-            stroke: rgba(0, 0, 0, 0.3);
-            shape-rendering: crispEdges;
-        }
-
-        .axis text {
-            font-size: 12px;
-            fill: rgba(0, 0, 0, 0.7);
-        }
-
         .legend {
             display: flex;
             flex-wrap: wrap;
@@ -82,7 +104,11 @@
             margin-top: 10px;
             font-size: 14px;
             cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 10px;
         }
+
 
         .legend-item {
             display: flex;
@@ -107,7 +133,7 @@
             background-color: rgba(255, 255, 255, 0.9);
             padding: 8px 12px;
             border-radius: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .toggle-label {
@@ -161,409 +187,453 @@
             transform: translateX(26px);
         }
 
-        h2 {
-            text-align: center;
-            margin: 20px 0;
+        .back-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .pie-chart-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 20px;
+        .back-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
-        .pie-chart {
-            width: 400px;
-            height: 400px;
+        .tooltip {
+            position: absolute;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            pointer-events: none;
+            display: none;
         }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 1200px) {
             .container {
                 flex-direction: column;
                 align-items: center;
             }
 
-            svg {
+            .chart-container {
                 width: 100%;
+                margin-right: 0;
                 margin-bottom: 20px;
             }
 
-            .pie-chart {
+            .pie-chart-container {
                 width: 100%;
-                height: auto;
             }
         }
     </style>
 </head>
 <body>
+    <button class="back-button" onclick="window.location.href='index.html'">Back to Home</button>
     <h2>Number of Finishers Over the Years</h2>
-    <svg width="1100" height="700"></svg> <!-- Reduced width to fit legend inside -->
-    <div class="legend"></div> <!-- Legend container -->
-    <div class="toggle-container">
-        <span class="toggle-label">Male</span>
-        <label class="toggle-switch">
-            <input type="checkbox" id="genderToggle">
-            <span class="slider"></span>
-        </label>
-        <span class="toggle-label">Female</span>
-    </div>
-    <div class="pie-chart-container">
-        <svg class="pie-chart"></svg>
+    <div class="container">
+        <div class="chart-container">
+            <svg width="1100" height="700"></svg>
+            <div class="legend"></div>
+            <div class="toggle-container">
+                <span class="toggle-label">Male</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="genderToggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="toggle-label">Female</span>
+            </div>
+        </div>
+        <div class="pie-chart-container">
+            <svg class="pie-chart" viewBox="0 0 400 400"></svg>
+        </div>
     </div>
     <script src="https://d3js.org/d3.v6.min.js"></script>
     <script>
-const margin = { top: 50, right: 150, bottom: 50, left: 70 },
-    width = 1100 - margin.left - margin.right,
-    height = 700 - margin.top - margin.bottom;
+        const margin = { top: 50, right: 150, bottom: 50, left: 70 },
+            width = 1100 - margin.left - margin.right,
+            height = 700 - margin.top - margin.bottom;
 
-const svg = d3.select("svg")
-    .append("g")
-    .attr("transform", `translate(${margin.left},${margin.top})`);
+        const svg = d3.select("svg")
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
 
-const legendContainer = d3.select(".legend");
+        const legendContainer = d3.select(".legend");
 
-const parseYear = d3.timeParse("%Y");
-const formatYear = d3.timeFormat("%Y");
+        // Add tooltip div to body
+        const tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip");
 
-const ranges = {
-    km: ["50-100", "100-150"],
-    mi: ["50-100", "100-150"]
-};
+        const parseYear = d3.timeParse("%Y");
+        const formatYear = d3.timeFormat("%Y");
 
-function getRange(value, type) {
-    const rangeArray = ranges[type];
-    for (let range of rangeArray) {
-        let [min, max] = range.includes("+") ? [parseFloat(range), Infinity] : range.split("-").map(Number);
-        if (value >= min && value < max) return `${range}_${type}`;
-    }
-    return undefined;
-}
-
-let maleData = [];
-let femaleData = [];
-let ageData = {};
-let currentGender = "Male";
-let currentDistance = "50-100_km";
-
-    Promise.all([
-        d3.csv("split_part_1.csv"),
-        d3.csv("split_part_2.csv"),
-        d3.csv("split_part_3.csv"),
-        d3.csv("split_part_4.csv")
-    ]).then(([...csvData]) => {
-    let data = [].concat(...csvData);
-    const currentYear = new Date().getFullYear();
-    const cutoffYear = currentYear - 40;
-
-    // Process and filter the data
-    data.forEach(d => {
-        const distanceStr = d["Event distance/length"].toLowerCase().replace(/\s+/g, '');
-        if (!distanceStr.includes('km') && !distanceStr.includes('mi')) return;
-        
-        const year = parseYear(d["Year of event"]);
-        if (!year || year.getFullYear() < cutoffYear) return;
-        
-        const finishers = +1;
-        if (isNaN(finishers)) return;
-        
-        let distance, unit;
-        if (distanceStr.includes('km')) {
-            distance = parseFloat(distanceStr.replace('km', ''));
-            unit = 'km';
-        } else {
-            distance = parseFloat(distanceStr.replace('mi', ''));
-            unit = 'mi';
-        }
-        
-        const rangeKey = getRange(distance, unit);
-        if (!rangeKey) return;
-        
-        const gender = d["Athlete gender"];
-        const age = d["Athlete age category"].replace(/\D/g, "");
-        const dataPoint = {
-            year: year,
-            yearStr: formatYear(year),
-            distance: rangeKey,
-            finishers: finishers
+        const ranges = {
+            km: ["50-100", "100-150"],
+            mi: ["50-100", "100-150"]
         };
 
-        if (gender === "M") {
-            maleData.push(dataPoint);
-        } else if (gender === "F") {
-            femaleData.push(dataPoint);
+        function getRange(value, type) {
+            const rangeArray = ranges[type];
+            for (let range of rangeArray) {
+                let [min, max] = range.includes("+") ? [parseFloat(range), Infinity] : range.split("-").map(Number);
+                if (value >= min && value < max) return `${range}_${type}`;
+            }
+            return undefined;
         }
 
-        ageData[rangeKey] ??= {};
-        ageData[rangeKey][age] = (ageData[rangeKey][age] || 0) + 1;
-    });
+        let maleData = [];
+        let femaleData = [];
+        let ageData = {};
+        let currentGender = "Male";
+        let currentDistance = "50-100_km";
 
-    drawChart(maleData);
-    updatePieChart(currentDistance);
-});
+        Promise.all([
+            d3.csv("split_part_1.csv"),
+            d3.csv("split_part_2.csv"),
+            d3.csv("split_part_3.csv"),
+            d3.csv("split_part_4.csv")
+        ]).then(([...csvData]) => {
+            let data = [].concat(...csvData);
+            const currentYear = new Date().getFullYear();
+            const cutoffYear = currentYear - 40;
 
-function drawChart(data) {
-    svg.selectAll("*").remove();
-    legendContainer.selectAll("*").remove();
+            // Process and filter the data
+            data.forEach(d => {
+                const distanceStr = d["Event distance/length"].toLowerCase().replace(/\s+/g, '');
+                if (!distanceStr.includes('km') && !distanceStr.includes('mi')) return;
+                
+                const year = parseYear(d["Year of event"]);
+                if (!year || year.getFullYear() < cutoffYear) return;
+                
+                const finishers = +1;
+                if (isNaN(finishers)) return;
+                
+                let distance, unit;
+                if (distanceStr.includes('km')) {
+                    distance = parseFloat(distanceStr.replace('km', ''));
+                    unit = 'km';
+                } else {
+                    distance = parseFloat(distanceStr.replace('mi', ''));
+                    unit = 'mi';
+                }
+                
+                const rangeKey = getRange(distance, unit);
+                if (!rangeKey) return;
+                
+                const gender = d["Athlete gender"];
+                const age = d["Athlete age category"].replace(/\D/g, "");
+                const dataPoint = {
+                    year: year,
+                    yearStr: formatYear(year),
+                    distance: rangeKey,
+                    finishers: finishers
+                };
 
-    // Group data by year and distance
-    let groupedData = d3.group(data, d => d.yearStr);
-    
-    // Get unique distances and years
-    const distances = new Set(data.map(d => d.distance));
-    const years = new Set(data.map(d => d.yearStr));
-    
-    // Create continuous data array
-    const continuousData = Array.from(years).sort().map(yearStr => {
-        const yearData = groupedData.get(yearStr) || [];
-        const dataPoint = {
-            year: parseYear(yearStr)
-        };
-        
-        // Initialize all distances to 0
-        distances.forEach(dist => {
-            dataPoint[dist] = 0;
-        });
-        
-        // Sum finishers for each distance in this year
-        yearData.forEach(d => {
-            dataPoint[d.distance] = (dataPoint[d.distance] || 0) + d.finishers;
-        });
-        
-        return dataPoint;
-    });
+                if (gender === "M") {
+                    maleData.push(dataPoint);
+                } else if (gender === "F") {
+                    femaleData.push(dataPoint);
+                }
 
-    // Create scales
-    const x = d3.scaleTime()
-        .domain(d3.extent(continuousData, d => d.year))
-        .range([0, width]);
-
-    const y = d3.scaleLinear()
-        .domain([0, d3.max(continuousData, d => 
-            Math.max(...Array.from(distances, dist => d[dist] || 0))
-        )])
-        .nice()
-        .range([height, 0]);
-
-    // Create separate color scales for km and mi
-    const colorKm = d3.scaleOrdinal(d3.schemeSet1);
-    const colorMi = d3.scaleOrdinal(d3.schemeSet2);
-
-    const getColor = (distance) => {
-        return distance.includes('_km') ? colorKm(distance) : colorMi(distance);
-    };
-
-    // Add axes
-    svg.append("g")
-        .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x)
-            .ticks(10)
-            .tickFormat(d3.timeFormat("%Y")));
-
-    svg.append("g")
-        .call(d3.axisLeft(y)
-            .tickFormat(d => d3.format(",.0f")(d)));
-
-    // Add lines and points
-    distances.forEach(distance => {
-        const line = d3.line()
-            .defined(d => !isNaN(d[distance]))
-            .x(d => x(d.year))
-            .y(d => y(d[distance] || 0));
-
-        const lineData = continuousData.filter(line.defined());
-
-        svg.append("path")
-            .datum(lineData)
-            .attr("class", "line")
-            .attr("fill", "none")
-            .attr("stroke", getColor(distance))
-            .attr("stroke-width", 4)
-            .attr("d", line)
-            .on("mouseover", function () {
-                d3.selectAll(".line").classed("inactive", true);
-                d3.select(this).classed("active", true).classed("inactive", false);
-                currentDistance = distance;
-                updatePieChart(distance);
-            })
-            .on("mouseout", function () {
-                d3.selectAll(".line").classed("inactive", false).classed("active", false);
+                ageData[rangeKey] ??= {};
+                ageData[rangeKey][age] = (ageData[rangeKey][age] || 0) + 1;
             });
 
-        // Add points
-        svg.selectAll(`.point-${distance}`)
-            .data(lineData)
-            .enter()
-            .append("circle")
-            .attr("class", `line-point point-${distance}`)
-            .attr("cx", d => x(d.year))
-            .attr("cy", d => y(d[distance] || 0))
-            .attr("r", 4)
-            .attr("fill", getColor(distance))
-            .on("mouseover", function () {
-                d3.selectAll(".line").classed("inactive", true);
-                d3.select(`.line[stroke="${getColor(distance)}"]`).classed("active", true).classed("inactive", false);
-                currentDistance = distance;
-                updatePieChart(distance);
-            })
-            .on("mouseout", function () {
-                d3.selectAll(".line").classed("inactive", false).classed("active", false);
-            });
-    });
+            drawChart(maleData);
+            updatePieChart(currentDistance);
+        });
 
-    // Split distances into km and mi
-    const kmDistances = Array.from(distances).filter(d => d.includes('_km'));
-    const miDistances = Array.from(distances).filter(d => d.includes('_mi'));
+        function drawChart(data) {
+            // [Previous drawChart function code remains the same]
+            svg.selectAll("*").remove();
+            legendContainer.selectAll("*").remove();
 
-    // Kilometer legend section
-    if (kmDistances.length > 0) {
-        legendContainer.append("div")
-            .style("font-weight", "bold")
-            .style("margin-top", "10px")
-            .text("Kilometers");
-
-        kmDistances.forEach(distance => {
-            const label = distance.split('_')[0] + ' km';
-            legendContainer.append("div")
-                .attr("class", "legend-item")
-                .html(`
-                    <div class="legend-color" style="background:${getColor(distance)}"></div>
-                    <span>${label}</span>
-                `)
-                .on("mouseover", () => {
-                    d3.selectAll(".line").classed("inactive", true);
-                    d3.select(`.line[stroke="${getColor(distance)}"]`).classed("active", true).classed("inactive", false);
-                    currentDistance = distance;
-                    updatePieChart(distance);
-                })
-                .on("mouseout", () => {
-                    d3.selectAll(".line").classed("inactive", false).classed("active", false);
+            // Group data by year and distance
+            let groupedData = d3.group(data, d => d.yearStr);
+            
+            // Get unique distances and years
+            const distances = new Set(data.map(d => d.distance));
+            const years = new Set(data.map(d => d.yearStr));
+            
+            // Create continuous data array
+            const continuousData = Array.from(years).sort().map(yearStr => {
+                const yearData = groupedData.get(yearStr) || [];
+                const dataPoint = {
+                    year: parseYear(yearStr)
+                };
+                
+                // Initialize all distances to 0
+                distances.forEach(dist => {
+                    dataPoint[dist] = 0;
                 });
-        });
-    }
-
-    // Miles legend section
-    if (miDistances.length > 0) {
-        legendContainer.append("div")
-            .style("font-weight", "bold")
-            .style("margin-top", "10px")
-            .text("Miles");
-
-        miDistances.forEach(distance => {
-            const label = distance.split('_')[0] + ' mi';
-            legendContainer.append("div")
-                .attr("class", "legend-item")
-                .html(`
-                    <div class="legend-color" style="background:${getColor(distance)}"></div>
-                    <span>${label}</span>
-                `)
-                .on("mouseover", () => {
-                    d3.selectAll(".line").classed("inactive", true);
-                    d3.select(`.line[stroke="${getColor(distance)}"]`).classed("active", true).classed("inactive", false);
-                    currentDistance = distance;
-                    updatePieChart(distance);
-                })
-                .on("mouseout", () => {
-                    d3.selectAll(".line").classed("inactive", false).classed("active", false);
+                
+                // Sum finishers for each distance in this year
+                yearData.forEach(d => {
+                    dataPoint[d.distance] = (dataPoint[d.distance] || 0) + d.finishers;
                 });
+                
+                return dataPoint;
+            });
+
+            // Create scales
+            const x = d3.scaleTime()
+                .domain(d3.extent(continuousData, d => d.year))
+                .range([0, width]);
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(continuousData, d => 
+                    Math.max(...Array.from(distances, dist => d[dist] || 0))
+                )])
+                .nice()
+                .range([height, 0]);
+
+            // Create separate color scales for km and mi
+            const colorKm = d3.scaleOrdinal(d3.schemeSet1);
+            const colorMi = d3.scaleOrdinal(d3.schemeSet2);
+
+            const getColor = (distance) => {
+                return distance.includes('_km') ? colorKm(distance) : colorMi(distance);
+            };
+
+            // Add axes
+            svg.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x)
+                    .ticks(10)
+                    .tickFormat(d3.timeFormat("%Y")));
+
+            svg.append("g")
+                .call(d3.axisLeft(y)
+                    .tickFormat(d => d3.format(",.0f")(d)));
+
+            // Add lines and points
+            distances.forEach(distance => {
+                const line = d3.line()
+                    .defined(d => !isNaN(d[distance]))
+                    .x(d => x(d.year))
+                    .y(d => y(d[distance] || 0));
+
+                const lineData = continuousData.filter(line.defined());
+
+                svg.append("path")
+                    .datum(lineData)
+                    .attr("class", "line")
+                    .attr("fill", "none")
+                    .attr("stroke", getColor(distance))
+                    .attr("stroke-width", 4)
+                    .attr("d", line)
+                    .on("mouseover", function () {
+                        d3.selectAll(".line").classed("inactive", true);
+                        d3.select(this).classed("active", true).classed("inactive", false);
+                        currentDistance = distance;
+                        updatePieChart(distance);
+                    })
+                    .on("mouseout", function () {
+                        d3.selectAll(".line").classed("inactive", false).classed("active", false);
+                    });
+
+                // Add points
+                svg.selectAll(`.point-${distance}`)
+                    .data(lineData)
+                    .enter()
+                    .append("circle")
+                    .attr("class", `line-point point-${distance}`)
+                    .attr("cx", d => x(d.year))
+                    .attr("cy", d => y(d[distance] || 0))
+                    .attr("r", 4)
+                    .attr("fill", getColor(distance))
+                    .on("mouseover", function () {
+                        d3.selectAll(".line").classed("inactive", true);
+                        d3.select(`.line[stroke="${getColor(distance)}"]`).classed("active", true).classed("inactive", false);
+                        currentDistance = distance;
+                        updatePieChart(distance);
+                    })
+                    .on("mouseout", function () {
+                        d3.selectAll(".line").classed("inactive", false).classed("active", false);
+                    });
+            });
+
+            // Split distances into km and mi
+            const kmDistances = Array.from(distances).filter(d => d.includes('_km'));
+            const miDistances = Array.from(distances).filter(d => d.includes('_mi'));
+
+            // Kilometer legend section
+            if (kmDistances.length > 0) {
+                legendContainer.append("div")
+                    .style("font-weight", "bold")
+                    .style("margin-top", "10px")
+                    .text("Kilometers");
+
+                kmDistances.forEach(distance => {
+                    const label = distance.split('_')[0] + ' km';
+                    legendContainer.append("div")
+                        .attr("class", "legend-item")
+                        .html(`
+                            <div class="legend-color" style="background:${getColor(distance)}"></div>
+                            <span>${label}</span>
+                        `)
+                        .on("mouseover", () => {
+                            d3.selectAll(".line").classed("inactive", true);
+                            d3.select(`.line[stroke="${getColor(distance)}"]`).classed("active", true).classed("inactive", false);
+                            currentDistance = distance;
+                            updatePieChart(distance);
+                        })
+                        .on("mouseout", () => {
+                            d3.selectAll(".line").classed("inactive", false).classed("active", false);
+                        });
+                });
+            }
+
+            // Miles legend section
+            if (miDistances.length > 0) {
+                legendContainer.append("div")
+                    .style("font-weight", "bold")
+                    .style("margin-top", "10px")
+                    .text("Miles");
+
+                miDistances.forEach(distance => {
+                    const label = distance.split('_')[0] + ' mi';
+                    legendContainer.append("div")
+                        .attr("class", "legend-item")
+                        .html(`
+                            <div class="legend-color" style="background:${getColor(distance)}"></div>
+                            <span>${label}</span>
+                        `)
+                        .on("mouseover", () => {
+                            d3.selectAll(".line").classed("inactive", true);
+                            d3.select(`.line[stroke="${getColor(distance)}"]`).classed("active", true).classed("inactive", false);
+                            currentDistance = distance;
+                            updatePieChart(distance);
+                        })
+                        .on("mouseout", () => {
+                            d3.selectAll(".line").classed("inactive", false).classed("active", false);
+                        });
+                });
+            }
+
+            // Add labels
+            svg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left)
+                .attr("x", 0 - (height / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Number of Finishers");
+
+            svg.append("text")
+                .attr("transform", `translate(${width/2}, ${height + 40})`)
+                .style("text-anchor", "middle")
+                .text("Year");
+        }
+
+        function updatePieChart(distance) {
+            const pieSvg = d3.select(".pie-chart");
+            pieSvg.selectAll("*").remove();
+
+            if (!distance || !ageData[distance]) return;
+
+            const data = ageData[distance];
+            const width = 400;
+            const height = 400;
+            const radius = Math.min(width, height) / 2 - 40;
+
+            const pie = d3.pie()
+                .value(d => d[1])
+                .sort(null);
+
+            const arc = d3.arc()
+                .innerRadius(radius * 0.4)
+                .outerRadius(radius);
+
+            const colorScale = d3.scaleOrdinal()
+                .domain(Object.keys(data))
+                .range(d3.schemeCategory10);
+
+            const g = pieSvg.append("g")
+                .attr("transform", `translate(${width/2},${height/2})`);
+
+            // Create and append the pie chart paths
+            g.selectAll("path")
+                .data(pie(Object.entries(data)))
+                .enter()
+                .append("path")
+                .attr("d", arc)
+                .attr("fill", d => colorScale(d.data[0]))
+                .attr("stroke", "white")
+                .attr("stroke-width", 2)
+                .style("cursor", "pointer")
+                .style("transition", "transform 0.2s")
+                .on("mouseover", function(event, d) {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr("transform", "scale(1.05)");
+
+                    const percentage = (d.data[1] / d3.sum(Object.values(data)) * 100).toFixed(1);
+                    const tooltipContent = `
+                        Age Group: ${d.data[0]}<br>
+                        Count: ${d.data[1]}<br>
+                        Percentage: ${percentage}%
+                    `;
+                    
+                    tooltip.style("display", "block")
+                        .html(tooltipContent)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 10) + "px");
+                })
+                .on("mousemove", function(event) {
+                    tooltip.style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 10) + "px");
+                })
+                .on("mouseout", function() {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr("transform", "scale(1)");
+                    
+                    tooltip.style("display", "none");
+                });
+
+            // Add percentage labels
+            const total = d3.sum(Object.values(data));
+            g.selectAll("text")
+                .data(pie(Object.entries(data)))
+                .enter()
+                .append("text")
+                .attr("transform", d => `translate(${arc.centroid(d)})`)
+                .attr("dy", ".35em")
+                .style("text-anchor", "middle")
+                .style("fill", "white")
+                .style("font-size", "12px")
+                .style("font-weight", "bold")
+                .text(d => {
+                    const percentage = (d.data[1] / total * 100).toFixed(1);
+                    return percentage > 5 ? `${percentage}%` : "";
+                });
+
+            // Add title
+            pieSvg.append("text")
+                .attr("x", width / 2)
+                .attr("y", 30)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .style("font-weight", "bold")
+                .text("Age Distribution");
+        }
+
+        d3.select("#genderToggle").on("change", function() {
+            currentGender = this.checked ? "Female" : "Male";
+            drawChart(currentGender === "Male" ? maleData : femaleData);
+            updatePieChart(currentDistance);
         });
-    }
-
-    // Add labels
-    svg.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left)
-        .attr("x", 0 - (height / 2))
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
-        .text("Number of Finishers");
-
-    svg.append("text")
-        .attr("transform", `translate(${width/2}, ${height + 40})`)
-        .style("text-anchor", "middle")
-        .text("Year");
-}
-
-    function updatePieChart(distance) {
-        const pieSvg = d3.select(".pie-chart");
-        pieSvg.selectAll("*").remove();
-
-        if (!distance || !ageData[distance]) return;
-
-        const data = ageData[distance];
-        const width = pieSvg.node().getBoundingClientRect().width;
-        const height = 400;
-        const radius = Math.min(width, height) / 2 - 40;
-
-        const pie = d3.pie().value(d => d[1]);
-        const arc = d3.arc().innerRadius(radius * 0.4).outerRadius(radius);
-
-        const colorScale = d3.scaleOrdinal()
-            .domain(Object.keys(data))
-            .range(d3.schemeCategory10);
-
-        const tooltip = d3.select(".tooltip");
-
-        const g = pieSvg.append("g")
-            .attr("transform", `translate(${width / 2},${height / 2})`);
-
-        g.selectAll("path")
-            .data(pie(Object.entries(data)))
-            .enter()
-            .append("path")
-            .attr("d", arc)
-            .attr("fill", d => colorScale(d.data[0]))
-            .attr("stroke", "white")
-            .attr("stroke-width", 2)
-            .style("cursor", "pointer")
-            .style("transition", "transform 0.2s")
-            .on("mouseover", function (event, d) {
-                d3.select(this)
-                    .transition()
-                    .duration(200)
-                    .attr("transform", `scale(1.05)`);
-
-                tooltip.style("display", "block")
-                    .html(`Age Group: ${d.data[0]}<br>Count: ${d.data[1]}`)
-                    .style("left", (event.pageX + 10) + "px")
-                    .style("top", (event.pageY - 10) + "px");
-            })
-            .on("mousemove", function (event) {
-                tooltip.style("left", (event.pageX + 10) + "px")
-                    .style("top", (event.pageY - 10) + "px");
-            })
-            .on("mouseout", function () {
-                d3.select(this)
-                    .transition()
-                    .duration(200)
-                    .attr("transform", "scale(1)");
-
-                tooltip.style("display", "none");
-            });
-
-        // Add percentage labels
-        const total = d3.sum(Object.values(data));
-        g.selectAll("text")
-            .data(pie(Object.entries(data)))
-            .enter()
-            .append("text")
-            .attr("transform", d => `translate(${arc.centroid(d)})`)
-            .attr("dy", ".35em")
-            .style("text-anchor", "middle")
-            .style("fill", "white")
-            .style("font-size", "12px")
-            .style("font-weight", "bold")
-            .text(d => {
-                const percentage = (d.data[1] / total * 100).toFixed(1);
-                return percentage > 5 ? `${percentage}%` : "";
-            });
-    }
-
-d3.select("#genderToggle").on("change", function() {
-    currentGender = this.checked ? "Female" : "Male";
-    drawChart(currentGender === "Male" ? maleData : femaleData);
-    updatePieChart(currentDistance);
-});
-</script>
+    </script>
 </body>
 </html>
