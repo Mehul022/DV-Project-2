@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choropleth Map - Long Distance Running</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            padding: 20px;
+            min-height: 100vh;
+            background-image: url('bg4.jpeg');
+            background-size: cover;
+        }
+
+        h2 {
+            margin: 20px 0;
+            font-size: 28px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 8px 16px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            background-color: #e9ecef;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: #dee2e6;
+            transform: translateY(-1px);
+        }
+
+        button.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        select {
+            padding: 8px 16px;
+            font-size: 14px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            background-color: white;
+            cursor: pointer;
+            min-width: 150px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        label {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .map-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: rgba(250, 247, 249, 0.743);
+            border-radius: 12px;
+            /* display: none; */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 1400px;
+            
+        }
+
+        .map {
+            width: 950px;
+            height: 680px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .charts-container {
+            display: flex;
+            flex-direction: column;
+            /* background-color: rgba(250, 247, 249, 0.743); */
+            gap: 30px;
+            width: 300px;
+        }
+
+        .chart {
+            width: 340px;
+            height: 340px;
+            background-color: rgba(250, 247, 249, 0.743);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .tooltip {
+            position: absolute;
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            pointer-events: none;
+            visibility: hidden;
+            font-size: 14px;
+            max-width: 200px;
+            z-index: 1000;
+        }
+
+        .tooltip strong {
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .legend {
+            font-size: 12px;
+            text-anchor: start;
+        }
+
+        .legend-item text {
+            fill: #495057;
+            font-size: 12px;
+        }
+
+        @media (max-width: 1200px) {
+            .map-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .map {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+
+            .charts-container {
+                width: 100%;
+                flex-direction: row;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .chart {
+                width: 100%;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2>Choropleth Map: Long-Distance Running Performance</h2>
+    <button id="kmBtn" class="active">KM</button>
+    <button id="miBtn">MI</button>
+    <label for="eventDropdown">Select Range:</label>
+    <select id="eventDropdown"></select>
+    <div class="map-container">
+        <svg class="map"></svg>
+        <div class="charts-container">
+            <svg id="ageChart" class="chart"></svg>
+            <svg id="genderChart" class="chart"></svg>
+        </div>
+    </div>
+    <div class="tooltip"></div>
+    <script>
+        const width = 950, height = 680;
+        const svg = d3.select(".map").attr("width", width).attr("height", height);
+        const projection = d3.geoMercator().scale(150).translate([width / 2, height / 1.5]);
+        const path = d3.geoPath().projection(projection);
+        const tooltip = d3.select(".tooltip");
+        const genderChart = d3.select("#genderChart");
+        const ageChart = d3.select("#ageChart");
+
+        // Fixed color schemes
+        const genderColors = {
+            'M': '#1f77b4',  // Blue for Male
+            'F': '#e377c2'   // Pink for Female
+        };
+
+        const ageColors = {
+            '20': '#1f77b4',
+            '23': '#ff7f0e',
+            '30': '#2ca02c',
+            '35': '#d62728',
+            '40': '#9467bd',
+            '45': '#8c564b',
+            '50': '#e377c2',
+            '55': '#7f7f7f',
+            '60': '#bcbd22',
+            '65': '#17becf',
+            '70': '#aec7e8',
+            '75': '#ffbb78',
+            '80': '#98df8a',
+            '85': '#ff9896',
+            '90': '#c5b0d5',
+            '95': '#c49c94'
+        };
+
+        const ranges = {
+            km: ["0-50", "50-100", "100-150", "150-200", "200-250", "250-300", "300-350", "350-400", "400-450", "450-500", "500-600", "600-700", "700-800", "800-900", "900-1000", "1000+"]
+        };
+
+        const kmData = {}, miData = {}, hrData = {}, genderData = {}, ageData = {}; // Store processed data
+        let currentUnit = "km";
+        let lockedCountry = null;
+
+        function parseTimeToHours(timeStr) {
+            const dayMatch = timeStr.match(/(\d+)d/);
+            const hourMatch = timeStr.match(/(\d+):/);
+            const minuteMatch = timeStr.match(/:(\d+):/);
+
+            const days = dayMatch ? parseInt(dayMatch[1], 10) : 0;
+            const hours = hourMatch ? parseInt(hourMatch[1], 10) : 0;
+            const minutes = minuteMatch ? parseInt(minuteMatch[1], 10) : 0;
+
+            return days * 24 + hours + minutes / 60;
+        }
+
+        function getRange(value, type) {
+            for (let range of ranges[type]) {
+                let [min, max] = range.includes("+") ? [parseFloat(range), Infinity] : range.split("-").map(Number);
+                if (value >= min && value < max) return range;
+            }
+            return undefined;
+        }
+
+        function processData(data) {
+            data.forEach(d => {
+                const distanceStr = d["Event distance/length"].replace(/\s+/g, '');
+                const timeStr = d["Athlete performance"];
+                const country = d["Athlete country"];
+                const gender = d["Athlete gender"];
+                const age = d["Athlete age category"].replace(/\D/g, "");
+
+                let time = parseTimeToHours(timeStr);
+                let dataset, range;
+
+                if (distanceStr.includes("km")) {
+                    let distance = parseFloat(distanceStr.replace("km", ''));
+                    range = getRange(distance, "km");
+                    dataset = kmData;
+                } else {
+                    let distance = parseFloat(distanceStr.replace("mi", '')) * 1.60934;
+                    range = getRange(distance, "km");
+                    dataset = miData;
+                }
+
+                if (!range) return;
+                dataset[range] ??= {};
+                dataset[range][country] ??= [];
+                if (time) dataset[range][country].push(time);
+
+                genderData[range] ??= {};
+                genderData[range][country] ??= { M: 0, F: 0 };
+                genderData[range][country][gender]++;
+
+                ageData[range] ??= {};
+                ageData[range][country] ??= {};
+                ageData[range][country][age] = (ageData[range][country][age] || 0) + 1;
+            });
+
+            for (const unitData of [kmData, miData, hrData]) {
+                for (const range in unitData) {
+                    for (const country in unitData[range]) {
+                        unitData[range][country] = d3.mean(unitData[range][country]);
+                    }
+                }
+            }
+        }
+
+        function drawPieChart(data, chart, title, colorScale) {
+            chart.selectAll("*").remove();
+            const radius = 100;
+            const pie = d3.pie().value(d => d[1]);
+            const arc = d3.arc().innerRadius(0).outerRadius(radius);
+
+            chart.append("text")
+                .attr("x", 150)
+                .attr("y", 20)
+                .text(title)
+                .style("font-size", "16px")
+                .attr("text-anchor", "middle");
+
+            const g = chart.append("g")
+                .attr("transform", "translate(150,150)")
+                .selectAll("path")
+                .data(pie(Object.entries(data)))
+                .enter()
+                .append("path")
+                .attr("d", arc)
+                .attr("fill", d => colorScale[d.data[0]])
+                .append("title")
+                .text(d => `${d.data[0]}: ${d.data[1]}`);
+
+            // Add legend
+            const legend = chart.append("g")
+                .attr("transform", "translate(0, 0)");
+            
+            const legendItems = legend.selectAll(".legend-item")
+                .data(Object.entries(data))
+                .enter()
+                .append("g")
+                .attr("class", "legend-item")
+                .attr("transform", (d, i) => `translate(0, ${i * 20})`);
+
+            legendItems.append("rect")
+                .attr("width", 9)
+                .attr("height", 9)
+                .attr("fill", d => colorScale[d[0]]);
+
+            legendItems.append("text")
+                .attr("x", 15)
+                .attr("y", 9)
+                .text(d => `${d[0]}`);
+        }
+
+        function updateCharts(country, range) {
+            if (!genderData[range] || !ageData[range]) return;
+            
+            drawPieChart(genderData[range][country] || {}, genderChart, "Gender Distribution", genderColors);
+            drawPieChart(ageData[range][country] || {}, ageChart, "Age Distribution", ageColors);
+        }
+
+        function updateDropdown() {
+            const dropdown = d3.select("#eventDropdown").html("");
+            ranges[currentUnit === "hr" ? "hr" : "km"].forEach(range => 
+                dropdown.append("option").text(range).attr("value", range)
+            );
+        }
+
+        function updateMap(range) {
+            const eventData = currentUnit === "km" ? kmData[range] : currentUnit === "mi" ? miData[range] : hrData[range];
+            if (!eventData) return;
+
+            const times = Object.values(eventData).filter(t => t !== undefined);
+            const colorScale = d3.scaleSequential(d3.interpolateBlues).domain([d3.min(times), d3.max(times)]);
+
+            svg.selectAll("*").remove();
+            svg.selectAll("path")
+                .data(world.features)
+                .enter().append("path")
+                .attr("d", path)
+                .attr("fill", d => {
+                    const time = eventData[d.properties.name];
+                    return time ? colorScale(time) : "#ddd";
+                })
+                .attr("stroke", "#333")
+                .on("mouseover", function(event, d) {
+                    if (lockedCountry) return;
+                    const time = eventData[d.properties.name];
+                    tooltip.style("visibility", "visible")
+                        .html(`<strong>${d.properties.name}</strong><br>Time: ${time ? time.toFixed(2) + " h" : "No Data"}`)
+                        .style("left", event.pageX + 10 + "px")
+                        .style("top", event.pageY + 10 + "px");
+                    updateCharts(d.properties.name, range);
+                })
+                .on("mousemove", event => {
+                    if (lockedCountry) return;
+                    tooltip.style("left", event.pageX + 10 + "px")
+                           .style("top", event.pageY + 10 + "px");
+                })
+                .on("mouseout", () => {
+                    if (lockedCountry) return;
+                    tooltip.style("visibility", "hidden");
+                })
+                .on("click", function(event, d) {
+                    if (lockedCountry === d.properties.name) {
+                        lockedCountry = null;
+                        tooltip.style("visibility", "hidden");
+                    } else {
+                        lockedCountry = d.properties.name;
+                        const time = eventData[d.properties.name];
+                        tooltip.style("visibility", "visible")
+                            .html(`<strong>${d.properties.name}</strong><br>Time: ${time ? time.toFixed(2) + " h" : "No Data"}`)
+                            .style("left", event.pageX + 10 + "px")
+                            .style("top", event.pageY + 10 + "px");
+                        updateCharts(d.properties.name, range);
+                    }
+                });
+
+            // Add legend for choropleth
+            const legendWidth = 300, legendHeight = 10;
+            const legendSvg = svg.append("g")
+                .attr("transform", `translate(${width - legendWidth - 20}, ${height - 40})`);
+
+            const legendScale = d3.scaleLinear()
+                .domain(colorScale.domain())
+                .range([0, legendWidth]);
+            const legendAxis = d3.axisBottom(legendScale).ticks(5);
+
+            const legendGradient = legendSvg.append("defs")
+                .append("linearGradient")
+                .attr("id", "legendGradient");
+
+            legendGradient.selectAll("stop")
+                .data(colorScale.ticks().map((t, i, n) => ({ 
+                    offset: `${100 * i / n.length}%`, 
+                    color: colorScale(t) 
+                })))
+                .enter()
+                .append("stop")
+                .attr("offset", d => d.offset)
+                .attr("stop-color", d => d.color);
+
+            legendSvg.append("rect")
+                .attr("width", legendWidth)
+                .attr("height", legendHeight)
+                .style("fill", "url(#legendGradient)");
+
+            legendSvg.append("g")
+                .attr("transform", `translate(0, ${legendHeight})`)
+                .call(legendAxis);
+        }
+
+        function switchUnit(unit) {
+            currentUnit = unit;
+            d3.selectAll("button").classed("active", false);
+            d3.select(`#${unit}Btn`).classed("active", true);
+            updateDropdown();
+            updateMap(d3.select("#eventDropdown").property("value"));
+        }
+
+        Promise.all([
+            d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"),
+            d3.csv("filter.csv")
+        ]).then(([worldData, csvData]) => {
+            world = worldData;
+            processData(csvData);
+            updateDropdown();
+            updateMap(ranges.km[0]);
+
+            d3.select("#eventDropdown").on("change", function() { updateMap(this.value); });
+            d3.select("#kmBtn").on("click", () => switchUnit("km"));
+            d3.select("#miBtn").on("click", () => switchUnit("mi"));
+        }).catch(error => console.error("Error loading data:", error));
+    </script>
+</body>
+</html>
