@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marathon Statistics Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Asul:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1c5be6;
+            --primary-hover: #1d4ed8;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #000000;
+            --text-secondary: #475569;
+            --accent: #3b82f6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background: url('bg4.jpeg') no-repeat center center fixed;
+            background-size: cover;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 90vw;
+            margin: auto;
+            background-image: url('bg2.jpeg');
+            opacity: 0.97;
+            background-size: cover;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2);
+            margin-top: 1.25rem;
+            margin-bottom: 2.5rem;
+            backdrop-filter: blur(8000000px);
+        }
+
+        .navbar {
+            background: var(--primary);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .nav-content {
+            max-width: 80vw;
+            margin: auto;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .navbar a {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s ease;
+            font-weight: 500;
+        }
+
+        .navbar a:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+            opacity: 0.8;
+
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            opacity: 0.8;
+
+        }
+
+        .stat-header {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            opacity: 0.8;
+
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            opacity: 0.8;
+
+        }
+
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            opacity: 0.8;
+
+        }
+
+        .trend-up {
+            color: #10b981;
+        }
+
+        .trend-down {
+            color: #ef4444;
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin: 2rem 0;
+            opacity: 0.9;
+        }
+
+        .performance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            background: var(--card-bg);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .performance-table th,
+        .performance-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .performance-table th {
+            background: var(--primary);
+            color: white;
+        }
+
+        .performance-table tr:hover {
+            background: #f8fafc;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                max-width: 95vw;
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .performance-table {
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navbar">
+        <div class="nav-content">
+            <a href="#dashboard">Dashboard</a>
+            <a href="q3.html">Finishers Data</a>
+            <a href="q1.html">Speed vs. Age Analysis</a>
+            <a href="q2.html">Performance Analysis</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="chart-container">
+        <h1 style="color: rgb(26, 96, 131);">Marathon Performance Analytics</h1>
+        <div style="color: rgb(74, 109, 206);">
+            <h2  style="color: rgba(58, 155, 235, 0.966)">What is an Ultramarathon?</h2>
+            <p  style="color: rgba(230, 107, 85, 0.966);">An ultramarathon is a long-distance running event that exceeds the standard marathon distance of 42.195
+                km.
+                These races range from 50 km to over 100 km, taking place worldwide in diverse terrains and conditions.
+            </p>
+
+            <h2 style="color: rgba(58, 155, 235, 0.966)"><strong>Summary of the Event and Dataset</strong></h2>
+            <p style="color: rgba(230, 107, 85, 0.966);">Ultramarathons attract endurance athletes from around the world, competing in various race formats such
+                as
+                50 km, 100 km, and beyond. The dataset includes information on event participation, performance metrics,
+                and demographic insights.</p>
+            <p style="color: rgba(230, 107, 85, 0.966);"> The dataset covers details on race distances, number of finishers, participant demographics (age, gender,
+                nationality),
+                and performance trends over time.</p>
+        </div>
+    </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">Average Completion Rate</div>
+                <div class="stat-value">87.3%</div>
+                <div class="stat-trend trend-up">↑ 2.5% from last year</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">Average Finish Time</div>
+                <div class="stat-value">11h 42m</div>
+                <div class="stat-trend trend-down">↓ 18 minutes from last year</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">Total Participants</div>
+                <div class="stat-value">15,847</div>
+                <div class="stat-trend trend-up">↑ 12% from last year</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2>Top Performing Countries</h2>
+            <table class="performance-table">
+                <thead>
+                    <tr>
+                        <th>Country</th>
+                        <th>Average Time</th>
+                        <th>Participants</th>
+                        <th>Success Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Spain</td>
+                        <td>10h 15m</td>
+                        <td>1,245</td>
+                        <td>92%</td>
+                    </tr>
+                    <tr>
+                        <td>France</td>
+                        <td>10h 45m</td>
+                        <td>1,567</td>
+                        <td>89%</td>
+                    </tr>
+                    <tr>
+                        <td>United States</td>
+                        <td>11h 05m</td>
+                        <td>2,890</td>
+                        <td>85%</td>
+                    </tr>
+                    <tr>
+                        <td>Japan</td>
+                        <td>11h 20m</td>
+                        <td>1,123</td>
+                        <td>91%</td>
+                    </tr>
+                    <tr>
+                        <td>Kenya</td>
+                        <td>11h 30m</td>
+                        <td>456</td>
+                        <td>88%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">Age Distribution</div>
+                <div class="stat-value">35-45</div>
+                <div class="stat-trend">Peak Performance Age Group</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">Gender Distribution</div>
+                <div class="stat-value">68% / 32%</div>
+                <div class="stat-trend">Male / Female Ratio</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">Most Popular Distance</div>
+                <div class="stat-value">50km</div>
+                <div class="stat-trend trend-up">↑ 15% participation increase</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

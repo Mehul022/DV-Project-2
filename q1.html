@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image: url('bg1.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .content-wrapper {
+            background: rgba(244, 181, 229, 0.6);
+            backdrop-filter: blur(8px);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin: 2rem;
+            width: 90%;
+            max-width: 1000px;
+        }
+
+        .controls {
+            margin: 20px;
+            text-align: center;
+        }
+
+        .controls select {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 2px solid #3498db;
+            background: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .tooltip {
+            position: absolute;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            border-radius: 8px;
+            pointer-events: none;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        svg {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 10px;
+        }
+
+        .line-path {
+            fill: none;
+            stroke-width: 7;
+        }
+
+        .male-line {
+            stroke: #1289d8;
+        }
+
+        .female-line {
+            stroke: #c0392b;
+        }
+
+        .running-icon {
+            pointer-events: none;
+        }
+
+        .legend {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            border-radius: 4px;
+        }
+
+        .legend-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+        }
+
+       .bar {
+            transition: opacity 0.3s ease;
+            opacity: 0.7;
+        }
+
+        .bar-group:hover .bar {
+            opacity: 0.3;
+        }
+
+        .bar-group:hover .bar:hover {
+            opacity: 1;
+        }
+        
+        #chart {
+            margin-left: 3vw;
+        }
+        .back-button-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        /* New styles for the back button */
+        .back-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .content-wrapper {
+            background: rgba(244, 181, 229, 0.6);
+            backdrop-filter: blur(8px);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin: 2rem;
+            width: 90%;
+            max-width: 1000px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="back-button-container">
+        <a href="index.html" class="back-button">Back to Home</a>
+    </div>
+    <div class="content-wrapper">
+        <div class="controls">
+            <label>Show Data For: </label>
+            <select id="genderFilter">
+                <option value="both">Both Genders</option>
+                <option value="male">Male Runners</option>
+                <option value="female">Female Runners</option>
+            </select>
+        </div>
+        <div id="chart"></div>
+    </div>
+
+    <script>
+        const data = [
+                { age: 20, male: 8.68, female: 7.56 },
+                { age: 25, male: 7.84, female: 7.29 },
+                { age: 30, male: 9.18, female: 8.35 },
+                { age: 35, male: 7.78, female: 7.36 },
+                { age: 40, male: 7.66, female: 7.24 },
+                { age: 45, male: 7.53, female: 7.06 },
+                { age: 50, male: 7.40, female: 6.86 },
+                { age: 55, male: 7.22, female: 6.67 },
+                { age: 60, male: 7.04, female: 6.39 },
+                { age: 65, male: 6.78, female: 5.98 },
+                { age: 70, male: 6.27, female: 5.33 },
+                { age: 75, male: 5.66, female: 4.98 },
+                { age: 80, male: 4.80, female: 4.80 },
+                { age: 85, male: 4.18, female: 5.27 },
+                { age: 90, male: 4.10, female: 2.17 }
+            ];
+
+            const colors = {
+                male: { bar: "  #ff0000 ", line: "#2980b9" },
+                female: { bar: " #1707a0 ", line: "#c0392b" }
+            };
+
+            const margin = { top: 40, right: 80, bottom: 60, left: 60 };
+            const width = 900 - margin.left - margin.right;
+            const height = 500 - margin.top - margin.bottom;
+
+            const svg = d3.select("#chart")
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            const x0 = d3.scaleBand()
+                .domain(data.map(d => d.age))
+                .range([0, width])
+                .padding(0.3);
+
+            const x1 = d3.scaleBand()
+                .domain(['male', 'female'])
+                .range([0, x0.bandwidth()])
+                .padding(0.1);
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, d => Math.max(d.male || 0, d.female || 0))])
+                .range([height, 0])
+                .nice();
+
+            const tooltip = d3.select("body")
+                .append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+            function drawGenderLine(gender) {
+                    const lineData = data
+                        .filter(d => gender === 'male' ? d.male : d.female)
+                        .map(d => ({
+                            age: d.age,
+                            speed: gender === 'male' ? d.male : d.female
+                        }))
+                        .sort((a, b) => a.age - b.age);
+
+                    const line = d3.line()
+                        .x(d => x0(d.age) + x0.bandwidth() / 2)
+                        .y(d => y(d.speed))
+                        .curve(d3.curveMonotoneX);
+
+                    const path = svg.append("path")
+                        .datum(lineData)
+                        .attr("class", `line-path ${gender}-line`)
+                        .attr("d", line)
+                        .style("opacity", 1);
+
+                    const totalLength = path.node().getTotalLength();
+
+                    // Set initial state of the line
+                    path.attr("stroke-dasharray", totalLength)
+                        .attr("stroke-dashoffset", totalLength);
+
+                    // Add running icon animation
+                    const icon = svg.append("image")
+                        .attr("class", "running-icon")
+                        .attr("xlink:href", `${gender}.png`)
+                        .attr("width", 30)
+                        .attr("height", 30);
+
+                    // Animate both line and icon together
+                    path.transition()
+                        .duration(2000)
+                        .ease(d3.easeLinear) // Use linear easing for smooth animation
+                        .attr("stroke-dashoffset", 0)
+                        .tween("pathTween", function () {
+                            return function (t) {
+                                // Calculate point along the path for current time t
+                                const point = path.node().getPointAtLength(t * totalLength);
+                                icon.attr("x", point.x - 15)
+                                    .attr("y", point.y - 15);
+                            };
+                        })
+                        .on("end", function () {
+                            icon.transition()
+                                .duration(500)
+                                .style("opacity", 0)
+                                .remove();
+                        });
+                }
+            function updateChart(filter) {
+                svg.selectAll(".bar-group, .axis, .legend, .line-path, .running-icon").remove();
+
+                // Add axes
+                svg.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${height})`)
+                    .call(d3.axisBottom(x0))
+                    .append("text")
+                    .attr("x", width / 2)
+                    .attr("y", 40)
+                    .attr("fill", "black")
+                    .text("Age (years)");
+
+                svg.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y))
+                    .append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", -45)
+                    .attr("x", -height / 2)
+                    .attr("fill", "black")
+                    .text("Average Speed (km/h)");
+
+                const barGroups = svg.selectAll(".bar-group")
+                    .data(data)
+                    .enter()
+                    .append("g")
+                    .attr("class", "bar-group")
+                    .attr("transform", d => `translate(${x0(d.age)},0)`);
+
+                if (filter === "both") {
+                    // Draw bars for both genders
+                    ["male", "female"].forEach(gender => {
+                        barGroups.append("rect")
+                            .attr("class", `bar ${gender}-bar`)
+                            .attr("x", x1(gender))
+                            .attr("width", x1.bandwidth())
+                            .attr("y", height)
+                            .attr("height", 0)
+                            .attr("fill", colors[gender].bar)
+                            .transition()
+                            .duration(1000)
+                            .attr("y", d => y(d[gender] || 0))
+                            .attr("height", d => height - y(d[gender] || 0));
+                    });
+
+                    // Add tooltips
+                    barGroups.selectAll(".bar")
+                        .on("mouseover", function (event, d) {
+                            const gender = d3.select(this).classed("male-bar") ? "male" : "female";
+                            const value = d[gender];
+                            if (value) {
+                                tooltip.transition()
+                                    .duration(200)
+                                    .style("opacity", 0.9);
+                                tooltip.html(`Age: ${d.age}<br/>${gender.charAt(0).toUpperCase() + gender.slice(1)} Speed: ${value.toFixed(2)} km/h`)
+                                    .style("left", (event.pageX + 5) + "px")
+                                    .style("top", (event.pageY - 28) + "px");
+                            }
+                        })
+                        .on("mouseout", function () {
+                            tooltip.transition()
+                                .duration(500)
+                                .style("opacity", 0);
+                        });
+                } else {
+                    // Draw bars and line for single gender
+                    barGroups.append("rect")
+                        .attr("class", "bar")
+                        .attr("x", x0.bandwidth() / 4)
+                        .attr("width", x0.bandwidth() / 2)
+                        .attr("y", height)
+                        .attr("height", 0)
+                        .attr("fill", colors[filter].bar)
+                        .transition()
+                        .duration(1000)
+                        .attr("y", d => y(d[filter] || 0))
+                        .attr("height", d => height - y(d[filter] || 0));
+
+                    // Add tooltips
+                    barGroups.selectAll(".bar")
+                        .on("mouseover", function (event, d) {
+                            const value = d[filter];
+                            if (value) {
+                                tooltip.transition()
+                                    .duration(200)
+                                    .style("opacity", 0.9);
+                                tooltip.html(`Age: ${d.age}<br/>${filter.charAt(0).toUpperCase() + filter.slice(1)} Speed: ${value.toFixed(2)} km/h`)
+                                    .style("left", (event.pageX + 5) + "px")
+                                    .style("top", (event.pageY - 28) + "px");
+                            }
+                        })
+                        .on("mouseout", function () {
+                            tooltip.transition()
+                                .duration(500)
+                                .style("opacity", 0);
+                        });
+
+                    // Draw line
+                    drawGenderLine(filter);
+                }
+
+                // Add legend
+                const legend = svg.append("g")
+                    .attr("class", "legend")
+                    .attr("transform", `translate(${width - 120}, 20)`);
+
+                const legendData = filter === "both"
+                    ? [
+                        { gender: "male", label: "Male Runners" },
+                        { gender: "female", label: "Female Runners" }
+                    ]
+                    : [{ gender: filter, label: `${filter.charAt(0).toUpperCase() + filter.slice(1)} Runners` }];
+
+                const legendItems = legend.selectAll(".legend-item")
+                    .data(legendData)
+                    .enter()
+                    .append("g")
+                    .attr("class", "legend-item")
+                    .attr("transform", (d, i) => `translate(0, ${i * 30})`);
+
+                if (filter === "both") {
+                    // Color boxes for both genders
+                    legendItems.append("rect")
+                        .attr("class", "legend-color")
+                        .attr("fill", d => colors[d.gender].bar)
+                        .attr("width", 0)
+                        .attr("height", 20)
+                        .transition()
+                        .duration(1000)
+                        .attr("width", 20);
+                } else {
+                    // Icon for single gender
+                    legendItems.append("image")
+                        .attr("class", "legend-icon")
+                        .attr("xlink:href", d => `${d.gender}.png`)
+                        .attr("width", 24)
+                        .attr("height", 24)
+                        .style("opacity", 0)
+                        .transition()
+                        .duration(1000)
+                        .style("opacity", 1);
+                }
+
+                legendItems.append("text")
+                    .attr("x", 30)
+                    .attr("y", 15)
+                    .style("opacity", 0)
+                    .text(d => d.label)
+                    .transition()
+                    .duration(1000)
+                    .style("opacity", 1);
+            }
+
+            // Initial chart
+            updateChart("both");
+
+            // Handle filter changes
+            d3.select("#genderFilter").on("change", function () {
+                updateChart(this.value);
+            });
+    </script>
+</body>
+
+</html>
